@@ -1,0 +1,96 @@
+<svg viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .title { font: bold 18px sans-serif; }
+      .label { font: 12px sans-serif; }
+      .bar-label { font: 10px sans-serif; text-anchor: middle; }
+      .wratio { fill: #3b82f6; }
+      .cosine { fill: #10b981; }
+      .grid { stroke: #e5e7eb; stroke-dasharray: 2,2; }
+    </style>
+  </defs>
+
+  <!-- Grid -->
+  <line class="grid" x1="60" y1="100" x2="870" y2="100" />
+  <line class="grid" x1="60" y1="150" x2="870" y2="150" />
+  <line class="grid" x1="60" y1="200" x2="870" y2="200" />
+  <line class="grid" x1="60" y1="250" x2="870" y2="250" />
+  <line class="grid" x1="60" y1="300" x2="870" y2="300" />
+  <line class="grid" x1="60" y1="350" x2="870" y2="350" />
+  <line class="grid" x1="60" y1="400" x2="870" y2="400" />
+
+  <!-- Axes -->
+  <line x1="60" y1="420" x2="870" y2="420" stroke="black" stroke-width="2"/>
+  <line x1="60" y1="50" x2="60" y2="420" stroke="black" stroke-width="2"/>
+
+  <!-- Y-axis labels -->
+  <text class="label" x="45" y="425">0</text>
+  <text class="label" x="25" y="425">20</text>
+  <text class="label" x="25" y="375">40</text>
+  <text class="label" x="25" y="325">60</text>
+  <text class="label" x="25" y="275">80</text>
+  <text class="label" x="15" y="225">100</text>
+
+  <!-- Title -->
+  <text class="title" x="450" y="30">Algorithm Comparison: Match Scores (10 Records)</text>
+
+  <!-- Bars (scaled: score/105 * 370px height) -->
+  <!-- Apple Inc -->
+  <rect class="wratio" x="75" y="200" width="15" height="223"/>
+  <rect class="cosine" x="95" y="287" width="15" height="133"/>
+
+  <!-- Microsoft -->
+  <rect class="wratio" x="125" y="72" width="15" height="348"/>
+  <rect class="cosine" x="145" y="195" width="15" height="225"/>
+
+  <!-- Google -->
+  <rect class="wratio" x="175" y="154" width="15" height="266"/>
+  <rect class="cosine" x="195" y="214" width="15" height="206"/>
+
+  <!-- Amazon -->
+  <rect class="wratio" x="225" y="95" width="15" height="335"/>
+  <rect class="cosine" x="245" y="183" width="15" height="237"/>
+
+  <!-- Tesla -->
+  <rect class="wratio" x="275" y="122" width="15" height="322"/>
+  <rect class="cosine" x="295" y="301" width="15" height="119"/>
+
+  <!-- Facebook -->
+  <rect class="wratio" x="325" y="340" width="15" height="80"/>
+  <rect class="cosine" x="345" y="404" width="15" height="16"/>
+
+  <!-- Netflix -->
+  <rect class="wratio" x="375" y="65" width="15" height="355"/>
+  <rect class="cosine" x="395" y="198" width="15" height="222"/>
+
+  <!-- Twitter -->
+  <rect class="wratio" x="425" y="244" width="15" height="176"/>
+  <rect class="cosine" x="445" y="344" width="15" height="76"/>
+
+  <!-- IBM -->
+  <rect class="wratio" x="475" y="98" width="15" height="322"/>
+  <rect class="cosine" x="495" y="169" width="15" height="251"/>
+
+  <!-- Oracle -->
+  <rect class="wratio" x="525" y="134" width="15" height="286"/>
+  <rect class="cosine" x="545" y="325" width="15" height="95"/>
+
+  <!-- X-axis labels -->
+  <text class="label" x="85" y="445">Apple</text>
+  <text class="label" x="135" y="445">Microsoft</text>
+  <text class="label" x="185" y="445">Google</text>
+  <text class="label" x="235" y="445">Amazon</text>
+  <text class="label" x="285" y="445">Tesla</text>
+  <text class="label" x="335" y="445">Facebook</text>
+  <text class="label" x="385" y="445">Netflix</text>
+  <text class="label" x="435" y="445">Twitter</text>
+  <text class="label" x="485" y="445">IBM</text>
+  <text class="label" x="535" y="445">Oracle</text>
+
+  <!-- Legend -->
+  <rect class="wratio" x="620" y="70" width="12" height="12"/>
+  <text class="label" x="640" y="80">Levenshtein WRatio</text>
+
+  <rect class="cosine" x="620" y="100" width="12" height="12"/>
+  <text class="label" x="640" y="110">TF-IDF Cosine</text>
+</svg>

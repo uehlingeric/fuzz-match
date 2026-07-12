@@ -1,6 +1,0 @@
-pandas
-rapidfuzz
-sparse_dot_topn
-scikit-learn
-unicodedata2
-numpy

@@ -1,213 +1,127 @@
-# Fuzz-Match
+# fuzz-match
 
-A high-performance fuzzy string matching tool that helps you find and score similarities between text strings. This tool provides two different matching algorithms:
+Fuzzy record-matching engine with two algorithms: TF-IDF cosine similarity (fast on large datasets) and Levenshtein WRatio (accurate on short strings).
 
-1. **Matrix Cosine** - Uses TF-IDF vectorization and cosine similarity for efficient large-scale matching
-2. **RapidFuzz WRatio** - Uses the Levenshtein distance-based WRatio algorithm for accurate matching
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-green.svg)](.python-version)
 
-## Features
+![Algorithm Comparison](docs/assets/algorithm-comparison.svg)
 
-- Compare one list against itself or two different lists
-- Smart execution time prediction before running matching operations
-- Two powerful matching algorithms:
-  - Matrix Cosine (faster for large datasets)
-  - RapidFuzz WRatio (more accurate for short strings)
-- Output scores on a 0-100 scale (higher = better match)
-- Simple CSV input/output format
-- Automatic handling of Unicode, case sensitivity, and punctuation
+## Overview
 
-## Installation
+Matches records by similarity and scores them on a 0–100 scale. Input: CSV with one or two columns. Output: CSV with name, matched name, and score. Two algorithms provide speed/accuracy tradeoffs: TF-IDF with sparse matrix multiplication runs fast on 1000+ records; Levenshtein WRatio excels on short strings and handles typos. Both normalize text, handle Unicode, and estimate runtime before execution.
+
+## Key Results
+
+Tested on 10 company name pairs with intentional typos and variations:
+
+| Algorithm | High Match | Low Match | Avg Score |
+|-----------|-----------|-----------|-----------|
+| Levenshtein WRatio | Microsoft (96.3) | Facebook (33.8) | 75.9 |
+| TF-IDF Cosine | Netflix (78.1) | Facebook (4.5) | 57.0 |
+
+WRatio trades sensitivity for accuracy on short text; cosine favors precision on longer, less-standardized strings.
+
+## How It Works
+
+**Levenshtein WRatio:** Calculates weighted edit-distance ratio. Fast for small datasets, excels on human-readable names and short fields.
+
+**TF-IDF Cosine:** Vectorizes strings as character bigram/trigram TF-IDF, computes cosine similarity, returns top-N matches per input. Uses sparse matrix multiplication for performance on large datasets.
+
+## Quickstart
 
 ```bash
-# Clone the repository
 git clone https://github.com/uehlingeric/fuzz-match.git
 cd fuzz-match
-
-# Install dependencies
-pip install -r requirements.txt
+uv sync
 ```
 
-## Usage Options
+Create `input/records.csv` with one of these formats:
 
-### Option 1: For Non-Technical Users (Folder-Based Approach)
-
-This approach is simple and requires no programming knowledge. It uses file directories and CSV files to process your data.
-
-#### 1. Prepare your data
-
-Create an `input` directory and place a CSV file inside it. The CSV file must use one of these formats:
-
-**Single column** named `to_match` (will match each item against all others, excluding exact matches):
-```
+```csv
+# Self-match (single column)
 to_match
-Apple Inc.
+Apple Inc
 Appel
-Apple Computers
-...
 ```
 
-**Two columns** named `to_match` and `to_match_to` (will match each item in the first column against items in the second column):
-```
+```csv
+# Cross-match (two columns)
 to_match,to_match_to
-Apple Inc.,Apple Computers
-Microsoft,Microsft Corp
-Google,Alphabet
-...
+Apple Inc,Apple Computer
+Microsoft,Microsft
 ```
-
-#### 2. Run the matching
-
-Open a command prompt or terminal in the fuzz-match directory and run one of these commands:
 
 ```bash
-# Run with Matrix Cosine method (recommended for large datasets)
-python fuzz_match.py --mc
-
-# OR
-
-# Run with RapidFuzz WRatio method (recommended for short strings)
-python fuzz_match.py --rf
+uv run fuzz-match --rf   # Levenshtein WRatio
+# or
+uv run fuzz-match --mc   # TF-IDF cosine
 ```
 
-#### 3. Get your results
+Results appear in `output/records.csv` with columns: `name`, `matched_name`, `score`.
 
-Results will be written to the `output` directory as a CSV file with the same name as your input file. The output format is:
+## Usage
 
+### Command Line
+
+```bash
+# Pre-match time estimate + run
+uv run fuzz-match --rf
+
+# or for TF-IDF (faster on 1000+ records)
+uv run fuzz-match --mc
 ```
-name,matched_name,score
-Apple Inc.,Apple Computers,92.55
-Microsoft,Microsft Corp,88.7
-...
-```
 
-### Option 2: For Technical Users (API Approach)
+Input CSV must have exactly one file in `input/`; output overwrites and removes input.
 
-If you're a developer who wants to integrate this directly into your Python code, you can import and use the functions directly.
-
-#### Import the functions
+### Python API
 
 ```python
 from fuzz_match import matrix_cosine, rapid_fuzz_wratio
+
+to_match = ["Apple Inc.", "Microsoft"]
+to_match_to = ["Apple Computers", "Microsft Corp"]
+
+# WRatio
+result = rapid_fuzz_wratio(to_match, to_match_to)
+print(result)
+
+# TF-IDF cosine
+result = matrix_cosine(to_match, to_match_to, topn=1)
+print(result)
 ```
 
-#### Using Matrix Cosine
+## Project Structure
 
-```python
-import pandas as pd
-from fuzz_match import matrix_cosine
-
-# Prepare your data
-to_match_list = ["Apple Inc.", "Microsoft", "Google"]
-to_match_to_list = ["Apple Computers", "Microsft Corp", "Alphabet"]
-
-# Run the matching algorithm
-results_df = matrix_cosine(
-    to_match_list, 
-    to_match_to_list, 
-    topn=1,          # Number of top matches to consider
-    threshold=-1,    # Minimum similarity threshold (-1 = no threshold)
-    skip_100=False   # Whether to skip exact matches
-)
-
-# Process your results
-print(results_df)
+```
+fuzz-match/
+├── src/fuzz_match/       # Core matching algorithms
+│   ├── core.py           # matrix_cosine, rapid_fuzz_wratio
+│   └── cli.py            # Command-line interface
+├── tests/                # Unit tests
+├── pyproject.toml        # uv-managed dependencies
+├── Makefile              # setup, test, lint, format, run, clean
+├── data/README.md        # Input/output CSV format documentation
+└── docs/assets/          # Charts and diagrams
 ```
 
-#### Using RapidFuzz WRatio
+## Limitations
 
-```python
-import pandas as pd
-from fuzz_match import rapid_fuzz_wratio
+- Single file per run (CLI mode) — batch processing requires scripting
+- WRatio is O(n²) on dataset size; scales to ~100k pairs on modern hardware
+- TF-IDF vectorizer loads all strings into memory; datasets > 1M records need partitioning
+- No incremental index updates — full re-vectorization on new data
 
-# Prepare your data
-to_match_list = ["Apple Inc.", "Microsoft", "Google"]
-to_match_to_list = ["Apple Computers", "Microsft Corp", "Alphabet"]
+## Development
 
-# Run the matching algorithm
-results_df = rapid_fuzz_wratio(
-    to_match_list,
-    to_match_to_list,
-    skip_100=False   # Whether to skip exact matches
-)
-
-# Process your results
-print(results_df)
+```bash
+make setup       # uv sync
+make test        # pytest with coverage
+make lint        # ruff check
+make format      # ruff format
+make clean       # remove cache/build artifacts
 ```
 
-#### Handling larger datasets
+## License & Status
 
-For large datasets, you can load data from files:
-
-```python
-import pandas as pd
-from fuzz_match import matrix_cosine
-
-# Load data from CSV files
-data1 = pd.read_csv("path/to/first_list.csv")
-data2 = pd.read_csv("path/to/second_list.csv")
-
-# Convert to lists
-to_match_list = data1["name_column"].tolist()
-to_match_to_list = data2["name_column"].tolist()
-
-# Run the matching algorithm
-results_df = matrix_cosine(to_match_list, to_match_to_list)
-
-# Save results
-results_df.to_csv("path/to/output.csv", index=False)
-```
-
-## How it works
-
-### Matrix Cosine Algorithm
-
-This algorithm uses TF-IDF (Term Frequency-Inverse Document Frequency) vectorization with character n-grams to convert strings into numerical vectors. It then calculates the cosine similarity between these vectors to determine how similar the strings are.
-
-The implementation uses sparse matrix multiplication for performance, allowing it to efficiently handle large datasets.
-
-#### Best for:
-- Large datasets (1,000+ records)
-- Long text strings
-- Situations where performance is critical
-
-### RapidFuzz WRatio Algorithm
-
-This algorithm uses the Levenshtein distance-based WRatio metric from the RapidFuzz library. It calculates a weighted ratio that combines different aspects of string similarity, which makes it particularly effective for short strings and human-readable text.
-
-#### Best for:
-- Smaller datasets
-- Short strings like names or titles
-- Situations where accuracy is more important than speed
-
-## Algorithm Selection Guide
-
-| Factor | Matrix Cosine | RapidFuzz WRatio |
-|--------|--------------|-----------------|
-| Dataset Size | Large (1,000+ items) | Small to medium (<1,000 items) |
-| String Length | Works well with longer strings | Works best with shorter strings |
-| Speed | Faster for large datasets | Faster for small datasets |
-| Memory Usage | Lower | Higher |
-| Accuracy | Good overall accuracy | Excellent for names and short text |
-
-## Performance
-
-The tool provides time estimates before running each algorithm, helping you decide which approach to use based on your dataset size.
-
-Example performance estimates:
-- Matrix Cosine: ~2 seconds for 1,000 x 1,000 comparisons
-- RapidFuzz WRatio: ~5.5 seconds for 1,000 x 1,000 comparisons
-
-Actual performance will vary based on hardware and string length.
-
-## License
-
-[MIT License](LICENSE)
-
-## References
-
-This project was inspired by techniques discussed in:
-- https://medium.com/trusted-data-science-haleon/fuzzy-matching-at-scale-part-i-4621b0b36ba5
-
-## Author
-
-Eric Uehling
+MIT © Eric Uehling. Built as a portfolio project; not accepting contributions.
