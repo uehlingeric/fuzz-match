@@ -13,14 +13,16 @@ Matches records by similarity and scores them on a 0–100 scale. Input: CSV wit
 
 ## Key Results
 
-Tested on 10 company name pairs with intentional typos and variations:
+Tested on a 10-record company-name fixture with intentional typos, legal-suffix variants, one rename (Facebook → Meta Platforms), and one acronym expansion (IBM):
 
 | Algorithm | High Match | Low Match | Avg Score |
 |-----------|-----------|-----------|-----------|
-| Levenshtein WRatio | Microsoft (96.3) | Facebook (33.8) | 75.9 |
-| TF-IDF Cosine | Netflix (78.1) | Facebook (4.5) | 57.0 |
+| Levenshtein WRatio | Oracle (86.1) | Facebook / IBM (45.0) | 69.7 |
+| TF-IDF Cosine | Netflix (79.7) | IBM (2.4) | 52.0 |
 
-WRatio trades sensitivity for accuracy on short text; cosine favors precision on longer, less-standardized strings.
+WRatio trades sensitivity for accuracy on short text; cosine favors precision on longer, less-standardized strings — and handles case differences better (Netflix vs. NETFLIX INTL), while both collapse on renames and acronym expansions that share no surface text.
+
+Regenerate the chart and scores: `uv run python scripts/generate_comparison_chart.py`
 
 ## How It Works
 
