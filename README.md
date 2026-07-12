@@ -122,6 +122,6 @@ make format      # ruff format
 make clean       # remove cache/build artifacts
 ```
 
-## License & Status
+## License
 
-MIT © Eric Uehling. Built as a portfolio project; not accepting contributions.
+MIT © Eric Uehling.
